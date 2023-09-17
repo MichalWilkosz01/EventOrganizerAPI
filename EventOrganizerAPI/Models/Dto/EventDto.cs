@@ -1,15 +1,14 @@
-﻿using EventOrganizerAPI.Models;
+﻿using EventOrganizerAPI.Entities;
 
-namespace EventOrganizerAPI.Entities
+namespace EventOrganizerAPI.Models.Dto
 {
-    public class Event
+    public class EventDto
     {
-        public int Id { get; set; }
         public string Name { get; set; }
         public string Description { get; set; }
         public int OrganizerId { get; set; }
-        public int LocationId { get; set; }
-        public virtual Location Location { get; set; }
+        public string City { get; set; }
+        public string Street { get; set; }
         public virtual User Organizer { get; set; }
         public int NumberOfParticipants { get; set; } = 0;
         public DateTime EventCreatedDate { get; set; } = DateTime.Now;

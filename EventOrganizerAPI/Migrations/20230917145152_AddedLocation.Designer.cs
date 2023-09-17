@@ -4,6 +4,7 @@ using EventOrganizerAPI.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventOrganizerAPI.Migrations
 {
     [DbContext(typeof(EventOrganizerDbContext))]
-    partial class EventOrganizerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230917145152_AddedLocation")]
+    partial class AddedLocation
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
