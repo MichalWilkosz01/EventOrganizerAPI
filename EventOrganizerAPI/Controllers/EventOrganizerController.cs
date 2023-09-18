@@ -8,6 +8,7 @@ namespace EventOrganizerAPI.Controllers
 {
     [ApiController]
     [Route("api/event")]
+    [Authorize]
     public class EventOrganizerController : ControllerBase
     {
         private readonly ILogger<EventOrganizerController> _logger;

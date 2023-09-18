@@ -21,6 +21,13 @@ namespace EventOrganizerAPI.DbInitializer
                     _dbContext.Users.Add(user);
                     _dbContext.SaveChanges();
                 }
+
+                if(!_dbContext.Roles.Any())
+                {
+                    var roles = GetRoles();
+                    _dbContext.Roles.AddRange(roles);
+                    _dbContext.SaveChanges();
+                }
             }
         }
 
@@ -38,6 +45,27 @@ namespace EventOrganizerAPI.DbInitializer
             };
 
             return user;
+        }
+
+        private IEnumerable<Role> GetRoles()
+        {
+            var roles = new List<Role>()
+            {
+                new Role()
+                {
+                    Name = "User"
+                },
+                new Role()
+                {
+                    Name = "Moderator"
+                },
+                new Role()
+                {
+                    Name = "Admin"
+                },
+            };
+
+            return roles;
         }
     }
 }

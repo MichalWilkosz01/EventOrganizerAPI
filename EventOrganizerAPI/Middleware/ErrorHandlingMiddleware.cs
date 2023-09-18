@@ -21,6 +21,21 @@ namespace EventOrganizerAPI.Middleware
                 context.Response.StatusCode = 404;
                 await context.Response.WriteAsync(e.Message);
             }
+            catch (AuthenticationException ae)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync(ae.Message);
+            }
+            catch (PermissionDeniedException pde)
+            {
+                context.Response.StatusCode = 401;
+                await context.Response.WriteAsync(pde.Message);
+            }
+            catch (InvalidDateRangeException ide)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync(ide.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);

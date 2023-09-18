@@ -27,5 +27,6 @@ namespace EventOrganizerAPI.Persistance
         public DbSet<Event> Events { get; set; }
         public DbSet<User> Users { get; set; }
         public DbSet<Attendee> Attendees { get; set; }
+        public DbSet<Role> Roles { get; set; }
     }
 }

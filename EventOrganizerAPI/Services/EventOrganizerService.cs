@@ -1,9 +1,13 @@
 ﻿using AutoMapper;
+using EventOrganizerAPI.Authorization;
 using EventOrganizerAPI.Entities;
 using EventOrganizerAPI.Exceptions;
 using EventOrganizerAPI.Models.Dto;
 using EventOrganizerAPI.Persistance;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using System.Security.Claims;
 
 namespace EventOrganizerAPI.Services
 {
@@ -12,12 +16,17 @@ namespace EventOrganizerAPI.Services
         private readonly EventOrganizerDbContext _dbContext;
         private readonly ILogger<EventOrganizerService> _logger;
         private readonly IMapper _mapper;
+        private readonly IUserContextService _userContext;
+        private readonly IAuthorizationService _authorizationService;
 
-        public EventOrganizerService(EventOrganizerDbContext dbContext, ILogger<EventOrganizerService> logger, IMapper mapper)
+        public EventOrganizerService(EventOrganizerDbContext dbContext, ILogger<EventOrganizerService> logger, IMapper mapper, 
+            IUserContextService userContext, IAuthorizationService authorizationService)
         {
             _dbContext = dbContext;
             _logger = logger;
             _mapper = mapper;
+            _userContext = userContext;
+            _authorizationService = authorizationService;
         }
 
         public async Task<IEnumerable<EventDto>> GetAll()
@@ -50,6 +59,14 @@ namespace EventOrganizerAPI.Services
             var eventById = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == id) 
                 ?? throw new NotFoundException("Event not found");
 
+            var authorizationResult = _authorizationService.AuthorizeAsync(_userContext.User, eventById,
+                new PermissionRequirement(AccessOperation.Delete)).Result;
+
+            if(!authorizationResult.Succeeded) 
+            {
+                throw new PermissionDeniedException("Access denied: You do not have permission to delete this event");
+            }
+
             _dbContext.Events.Remove(eventById);
             await _dbContext.SaveChangesAsync();
         }
@@ -58,8 +75,9 @@ namespace EventOrganizerAPI.Services
         {
             var newEvent = _mapper.Map<Event>(dto);
 
-            //Temporary user
-            newEvent.OrganizerId = 1;
+            var userId = int.Parse(_userContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
+            newEvent.OrganizerId = userId;
 
             await _dbContext.Events.AddAsync(newEvent);
             await _dbContext.SaveChangesAsync();
@@ -72,10 +90,23 @@ namespace EventOrganizerAPI.Services
             var eventToUpdate = await _dbContext.Events
                 .FirstOrDefaultAsync(e => e.Id == id) 
                 ?? throw new NotFoundException("Event not found");
-            
+
+            var authorizationResult = _authorizationService.AuthorizeAsync(_userContext.User, eventToUpdate,
+                new PermissionRequirement(AccessOperation.Delete)).Result;
+
+            if (!authorizationResult.Succeeded)
+            {
+                throw new PermissionDeniedException("Access denied: You do not have permission to update this event");
+            }
+
             if (dto.EventStartDate < dto.EventEndDate)
             {
                 throw new InvalidDateRangeException("Start date cannot be later than end date");
+            }
+
+            if(dto.EventEndDate < DateTime.Today || dto.EventStartDate < DateTime.Today)
+            {
+                throw new InvalidDateRangeException("Dates cannot be in the past");
             }
 
             _mapper.Map(dto, eventToUpdate);

@@ -4,6 +4,7 @@ using EventOrganizerAPI.Persistance;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace EventOrganizerAPI.Migrations
 {
     [DbContext(typeof(EventOrganizerDbContext))]
-    partial class EventOrganizerDbContextModelSnapshot : ModelSnapshot
+    [Migration("20230918152839_UserRoleAdd")]
+    partial class UserRoleAdd
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -40,7 +43,7 @@ namespace EventOrganizerAPI.Migrations
 
                     b.HasIndex("UserId");
 
-                    b.ToTable("Attendees", (string)null);
+                    b.ToTable("Attendees");
                 });
 
             modelBuilder.Entity("EventOrganizerAPI.Entities.Event", b =>
@@ -84,7 +87,7 @@ namespace EventOrganizerAPI.Migrations
 
                     b.HasIndex("OrganizerId");
 
-                    b.ToTable("Events", (string)null);
+                    b.ToTable("Events");
                 });
 
             modelBuilder.Entity("EventOrganizerAPI.Entities.Location", b =>
@@ -105,7 +108,7 @@ namespace EventOrganizerAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Location", (string)null);
+                    b.ToTable("Location");
                 });
 
             modelBuilder.Entity("EventOrganizerAPI.Entities.Role", b =>
@@ -122,7 +125,7 @@ namespace EventOrganizerAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Roles", (string)null);
+                    b.ToTable("Roles");
                 });
 
             modelBuilder.Entity("EventOrganizerAPI.Entities.User", b =>
@@ -161,7 +164,7 @@ namespace EventOrganizerAPI.Migrations
 
                     b.HasKey("Id");
 
-                    b.ToTable("Users", (string)null);
+                    b.ToTable("Users");
                 });
 
             modelBuilder.Entity("EventOrganizerAPI.Entities.Attendee", b =>

@@ -13,5 +13,7 @@ namespace EventOrganizerAPI.Entities
         public DateTime DateOfBirth { get; set; }
         public string City { get; set; }
         public List<Attendee> Attendees { get; set; } = new List<Attendee>();
+        public int RoleId { get; set; } = 1;
+        public virtual Role Role { get; set; }
     }
 }
