@@ -36,6 +36,11 @@ namespace EventOrganizerAPI.Middleware
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync(ide.Message);
             }
+            catch (InvalidOperationException ioe)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync(ioe.Message);
+            }
             catch (UserAlreadyParticipatingException uape)
             {
                 context.Response.StatusCode = 400;

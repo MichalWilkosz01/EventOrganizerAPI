@@ -54,7 +54,6 @@ namespace EventOrganizerAPI.Controllers
         public async Task<ActionResult> UpdateEvent([FromBody] UpdateEventDto dto, [FromRoute] int id)
         {
             await _service.UpdateEvent(dto, id);
-
             return Ok();
         }
 
@@ -62,6 +61,13 @@ namespace EventOrganizerAPI.Controllers
         public async Task<ActionResult> JoinEvent([FromRoute] int eventId)
         {
             await _service.Join(eventId);
+            return Ok();
+        }
+
+        [HttpDelete("{eventId}/leave")]
+        public async Task<ActionResult> LeaveEvent([FromRoute] int eventId)
+        {
+            await _service.Leave(eventId);
             return Ok();
         }
     }

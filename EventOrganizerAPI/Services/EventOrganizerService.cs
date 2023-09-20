@@ -72,7 +72,10 @@ namespace EventOrganizerAPI.Services
            
             var locationToDelete = eventById.Location;
 
-            _dbContext.Locations.Remove(locationToDelete);
+            var attendeesToDelete = _dbContext.Attendees.Where(e => e.EventId == id);
+
+            _dbContext.Attendees.RemoveRange(attendeesToDelete);
+            _dbContext.Locations.Remove(locationToDelete);           
 
             _dbContext.Events.Remove(eventById);
             await _dbContext.SaveChangesAsync();
@@ -85,6 +88,7 @@ namespace EventOrganizerAPI.Services
             var userId = int.Parse(_userContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
             newEvent.OrganizerId = userId;
+            newEvent.NumberOfParticipants = 1;
 
             await _dbContext.Events.AddAsync(newEvent);
             await _dbContext.SaveChangesAsync();
@@ -152,13 +156,37 @@ namespace EventOrganizerAPI.Services
             Attendee attendee = new Attendee()
             {
                 UserId = userId,
-                EventId = eventToJoin.Id
-                
+                EventId = eventToJoin.Id   
             };
 
             await _dbContext.Attendees.AddAsync(attendee);
             await _dbContext.SaveChangesAsync();
         }
 
+        public async Task Leave(int eventId)
+        {
+            var eventToLeave = await _dbContext.Events
+                .FirstOrDefaultAsync(e => e.Id == eventId)
+                ?? throw new NotFoundException("Event not found");
+
+            var userId = int.Parse(_userContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
+            if (userId == eventToLeave.OrganizerId)
+            {
+                throw new InvalidOperationException("The organizer cannot leave their own event");
+            }
+
+            var attendeeToDelete = await _dbContext.Attendees.FirstOrDefaultAsync(a => a.UserId == userId && a.EventId == eventId);
+
+            if (attendeeToDelete == null)
+            {
+                throw new UserAlreadyParticipatingException("The user is not a participant in this event");
+            }
+
+            eventToLeave.NumberOfParticipants -= 1;
+
+            _dbContext.Attendees.Remove(attendeeToDelete);
+            await _dbContext.SaveChangesAsync();
+        }
     }
 }

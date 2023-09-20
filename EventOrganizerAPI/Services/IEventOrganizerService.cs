@@ -12,5 +12,6 @@ namespace EventOrganizerAPI.Services
         Task<int> CreateEvent(CreateEventDto dto);
         Task UpdateEvent(UpdateEventDto dto, int id);
         Task Join(int eventId);
+        Task Leave(int eventId);
     }
 }
