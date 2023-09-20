@@ -1,15 +1,18 @@
 ﻿using EventOrganizerAPI.Entities;
 using EventOrganizerAPI.Persistance;
+using Microsoft.AspNetCore.Identity;
 
 namespace EventOrganizerAPI.DbInitializer
 {
     public class DbInitializer : IDbInitializer
     {
         private readonly EventOrganizerDbContext _dbContext;
+        private readonly IPasswordHasher<User> _passwordHasher;
 
-        public DbInitializer(EventOrganizerDbContext dbContext)
+        public DbInitializer(EventOrganizerDbContext dbContext, IPasswordHasher<User> passwordHasher)
         {
             _dbContext = dbContext;
+            _passwordHasher = passwordHasher;
         }
         public void Initialize()
         {
@@ -41,8 +44,12 @@ namespace EventOrganizerAPI.DbInitializer
                 Email = "test@wp.pl",
                 FirstName = "TestFN",
                 LastName = "TestLN",
-
+                RoleId = 3
             };
+
+            var hashedPassword = _passwordHasher.HashPassword(user, "admin");
+
+            user.PasswordHashed = hashedPassword;
 
             return user;
         }

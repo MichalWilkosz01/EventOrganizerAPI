@@ -57,5 +57,12 @@ namespace EventOrganizerAPI.Controllers
 
             return Ok();
         }
+
+        [HttpPost("{eventId}/join")]
+        public async Task<ActionResult> JoinEvent([FromRoute] int eventId)
+        {
+            await _service.Join(eventId);
+            return Ok();
+        }
     }
 }

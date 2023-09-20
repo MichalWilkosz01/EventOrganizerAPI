@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Security.Claims;
+using System.Transactions;
 
 namespace EventOrganizerAPI.Services
 {
@@ -56,7 +57,9 @@ namespace EventOrganizerAPI.Services
         {
             _logger.LogInformation($"Event with id: {id} DELETE action invoked");
 
-            var eventById = await _dbContext.Events.FirstOrDefaultAsync(e => e.Id == id) 
+            var eventById = await _dbContext.Events
+                .Include(e => e.Location)
+                .FirstOrDefaultAsync(e => e.Id == id) 
                 ?? throw new NotFoundException("Event not found");
 
             var authorizationResult = _authorizationService.AuthorizeAsync(_userContext.User, eventById,
@@ -66,6 +69,10 @@ namespace EventOrganizerAPI.Services
             {
                 throw new PermissionDeniedException("Access denied: You do not have permission to delete this event");
             }
+           
+            var locationToDelete = eventById.Location;
+
+            _dbContext.Locations.Remove(locationToDelete);
 
             _dbContext.Events.Remove(eventById);
             await _dbContext.SaveChangesAsync();
@@ -80,6 +87,15 @@ namespace EventOrganizerAPI.Services
             newEvent.OrganizerId = userId;
 
             await _dbContext.Events.AddAsync(newEvent);
+            await _dbContext.SaveChangesAsync();
+
+            Attendee attendee = new Attendee()
+            {
+                UserId = userId,
+                EventId = newEvent.Id
+            };
+
+            await _dbContext.Attendees.AddAsync(attendee);
             await _dbContext.SaveChangesAsync();
 
             return newEvent.Id;
@@ -115,5 +131,34 @@ namespace EventOrganizerAPI.Services
             
             await _dbContext.SaveChangesAsync();
         }
+
+        public async Task Join(int eventId)
+        {
+            var eventToJoin = await _dbContext.Events
+                .FirstOrDefaultAsync(e => e.Id == eventId) 
+                ?? throw new NotFoundException("Event not found");
+
+            var userId = int.Parse(_userContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
+
+            var isUserParticipant = _dbContext.Attendees.Any(a => a.UserId == userId && a.EventId == eventId);
+
+            if (isUserParticipant)
+            {
+                throw new UserAlreadyParticipatingException("The user is already a participant in this event");
+            }
+
+            eventToJoin.NumberOfParticipants += 1;
+            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
+            Attendee attendee = new Attendee()
+            {
+                UserId = userId,
+                EventId = eventToJoin.Id
+                
+            };
+
+            await _dbContext.Attendees.AddAsync(attendee);
+            await _dbContext.SaveChangesAsync();
+        }
+
     }
 }

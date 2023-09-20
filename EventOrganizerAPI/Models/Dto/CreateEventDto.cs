@@ -1,4 +1,4 @@
-﻿using EventOrganizerAPI.Entities;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace EventOrganizerAPI.Models.Dto
 {
