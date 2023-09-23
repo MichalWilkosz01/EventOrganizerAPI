@@ -1,4 +1,5 @@
 ﻿using EventOrganizerAPI.Models;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace EventOrganizerAPI.Entities
 {

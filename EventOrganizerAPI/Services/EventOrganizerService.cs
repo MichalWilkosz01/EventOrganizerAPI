@@ -83,6 +83,16 @@ namespace EventOrganizerAPI.Services
 
         public async Task<int> CreateEvent(CreateEventDto dto)
         {
+            if (dto.EventStartDate > dto.EventEndDate)
+            {
+                throw new InvalidDateRangeException("Start date cannot be later than end date");
+            }
+
+            if (dto.EventEndDate < DateTime.Today || dto.EventStartDate < DateTime.Today)
+            {
+                throw new InvalidDateRangeException("Dates cannot be in the past");
+            }
+
             var newEvent = _mapper.Map<Event>(dto);
 
             var userId = int.Parse(_userContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
@@ -119,7 +129,7 @@ namespace EventOrganizerAPI.Services
                 throw new PermissionDeniedException("Access denied: You do not have permission to update this event");
             }
 
-            if (dto.EventStartDate < dto.EventEndDate)
+            if (dto.EventStartDate > dto.EventEndDate)
             {
                 throw new InvalidDateRangeException("Start date cannot be later than end date");
             }

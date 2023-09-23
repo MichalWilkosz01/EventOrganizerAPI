@@ -10,7 +10,7 @@ namespace EventOrganizerAPI.Persistance
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<Attendee>()
-            .HasKey(a => a.Id);
+            .HasKey(a => a.Id);    
 
             modelBuilder.Entity<Attendee>()
                 .HasOne(a => a.User)

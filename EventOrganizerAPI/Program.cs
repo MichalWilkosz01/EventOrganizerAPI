@@ -11,12 +11,21 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 using Microsoft.AspNetCore.Authorization;
 using EventOrganizerAPI.Authorization;
+using FluentValidation;
+using EventOrganizerAPI.Models.Dto;
+using EventOrganizerAPI.Models.Validators;
+using FluentValidation.AspNetCore;
+using System.Reflection;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddNewtonsoftJson();
+
+builder.Services.AddFluentValidationAutoValidation();
+
+builder.Services.AddFluentValidationClientsideAdapters();
 
 var authenticationSettings = new AuthenticationSettings();
 
@@ -62,6 +71,10 @@ builder.Services.AddScoped<IUserContextService, UserContextService>();
 builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
 
 builder.Services.AddAutoMapper(typeof(EventMappingProfile));
+
+builder.Services.AddScoped<IValidator<CreateEventDto>, CreateEventDtoValidator>();
+
+builder.Services.AddScoped<IValidator<RegisterUserDto>, RegisterUserDtoValidator>();
 
 builder.Services.AddHttpContextAccessor();
 
