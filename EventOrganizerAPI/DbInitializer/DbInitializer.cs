@@ -18,17 +18,17 @@ namespace EventOrganizerAPI.DbInitializer
         {
             if(_dbContext.Database.CanConnect())
             {
-                if(!_dbContext.Users.Any())
-                {
-                    var user = GetUser();
-                    _dbContext.Users.Add(user);
-                    _dbContext.SaveChanges();
-                }
-
-                if(!_dbContext.Roles.Any())
+                if (!_dbContext.Roles.Any())
                 {
                     var roles = GetRoles();
                     _dbContext.Roles.AddRange(roles);
+                    _dbContext.SaveChanges();
+                }
+
+                if (!_dbContext.Users.Any())
+                {
+                    var user = GetUser();
+                    _dbContext.Users.Add(user);
                     _dbContext.SaveChanges();
                 }
             }
