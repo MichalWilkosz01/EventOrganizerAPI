@@ -46,6 +46,11 @@ namespace EventOrganizerAPI.Middleware
                 context.Response.StatusCode = 400;
                 await context.Response.WriteAsync(uape.Message);
             }
+            catch (UserNotParticipatingException unape)
+            {
+                context.Response.StatusCode = 400;
+                await context.Response.WriteAsync(unape.Message);
+            }
             catch (Exception ex)
             {
                 _logger.LogError(ex, ex.Message);

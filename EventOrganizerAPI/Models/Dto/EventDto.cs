@@ -17,6 +17,6 @@ namespace EventOrganizerAPI.Models.Dto
         public DateTime EventStartDate { get; set; }
         [JsonConverter(typeof(CustomDateTimeConverter))]
         public DateTime EventEndDate { get; set; }
-        public List<Attendee> Attendees { get; set; } = new List<Attendee>();
+        public List<User> Attendees { get; set; } = new List<User>();
     }
 }

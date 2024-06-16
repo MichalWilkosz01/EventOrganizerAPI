@@ -50,7 +50,7 @@ namespace EventOrganizerAPI.Controllers
             return Created($"/api/event/{id}", null);
         }
 
-        [HttpPatch("{id}")]
+        [HttpPut("{id}")]
         public async Task<ActionResult> UpdateEvent([FromBody] UpdateEventDto dto, [FromRoute] int id)
         {
             await _service.UpdateEvent(dto, id);

@@ -72,9 +72,6 @@ namespace EventOrganizerAPI.Services
            
             var locationToDelete = eventById.Location;
 
-            var attendeesToDelete = _dbContext.Attendees.Where(e => e.EventId == id);
-
-            _dbContext.Attendees.RemoveRange(attendeesToDelete);
             _dbContext.Locations.Remove(locationToDelete);           
 
             _dbContext.Events.Remove(eventById);
@@ -101,15 +98,6 @@ namespace EventOrganizerAPI.Services
             newEvent.NumberOfParticipants = 1;
 
             await _dbContext.Events.AddAsync(newEvent);
-            await _dbContext.SaveChangesAsync();
-
-            Attendee attendee = new Attendee()
-            {
-                UserId = userId,
-                EventId = newEvent.Id
-            };
-
-            await _dbContext.Attendees.AddAsync(attendee);
             await _dbContext.SaveChangesAsync();
 
             return newEvent.Id;
@@ -154,28 +142,36 @@ namespace EventOrganizerAPI.Services
 
             var userId = int.Parse(_userContext.User.FindFirst(c => c.Type == ClaimTypes.NameIdentifier).Value);
 
-            var isUserParticipant = _dbContext.Attendees.Any(a => a.UserId == userId && a.EventId == eventId);
+            var user = await _dbContext.Users
+                .Include(u => u.AttendingEvents)
+                .FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new NotFoundException("User not found");
+
+            var isUserOrganizer = user.OrganizedEvents.Contains(eventToJoin);
+
+            if (isUserOrganizer)
+            {
+                throw new UserAlreadyParticipatingException(
+                    "You are the organizer of this event and cannot join as a participant."
+                    );
+            }
+
+            var isUserParticipant = user.AttendingEvents.Contains(eventToJoin);
 
             if (isUserParticipant)
             {
                 throw new UserAlreadyParticipatingException("The user is already a participant in this event");
             }
-
-            eventToJoin.NumberOfParticipants += 1;
-            var user = await _dbContext.Users.FirstOrDefaultAsync(u => u.Id == userId);
-            Attendee attendee = new Attendee()
-            {
-                UserId = userId,
-                EventId = eventToJoin.Id   
-            };
-
-            await _dbContext.Attendees.AddAsync(attendee);
+            
+            eventToJoin.Attendees.Add(user);
+            eventToJoin.NumberOfParticipants++;
             await _dbContext.SaveChangesAsync();
         }
 
         public async Task Leave(int eventId)
         {
             var eventToLeave = await _dbContext.Events
+                .Include(e => e.Attendees)
                 .FirstOrDefaultAsync(e => e.Id == eventId)
                 ?? throw new NotFoundException("Event not found");
 
@@ -186,16 +182,18 @@ namespace EventOrganizerAPI.Services
                 throw new InvalidOperationException("The organizer cannot leave their own event");
             }
 
-            var attendeeToDelete = await _dbContext.Attendees.FirstOrDefaultAsync(a => a.UserId == userId && a.EventId == eventId);
+            var leavingUser = await _dbContext.Users
+                .FirstOrDefaultAsync(u => u.Id == userId)
+                ?? throw new NotFoundException("User not found");
 
-            if (attendeeToDelete == null)
+            if (!eventToLeave.Attendees.Any(a => a.Id == userId))
             {
-                throw new UserAlreadyParticipatingException("The user is not a participant in this event");
+                throw new UserNotParticipatingException("The user is not a participant in this event");
             }
 
             eventToLeave.NumberOfParticipants -= 1;
-
-            _dbContext.Attendees.Remove(attendeeToDelete);
+            eventToLeave.Attendees.Remove(leavingUser);
+            
             await _dbContext.SaveChangesAsync();
         }
     }

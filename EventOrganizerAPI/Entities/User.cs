@@ -15,8 +15,9 @@ namespace EventOrganizerAPI.Entities
         [Column(TypeName = "date")]
         public DateTime DateOfBirth { get; set; }
         public string City { get; set; }
-        public List<Attendee> Attendees { get; set; } = new List<Attendee>();
         public int RoleId { get; set; } 
         public virtual Role Role { get; set; }
+        public List<Event> AttendingEvents { get; } = new List<Event>();
+        public List<Event> OrganizedEvents { get; } = new List<Event>();
     }
 }
